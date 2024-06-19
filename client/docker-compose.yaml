@@ -1,45 +1,5 @@
-# version: '3.8'
-# services:
-#   app:
-#     build:
-#       context: .
-#     image: nextjs-dev
-#     ports:
-#       - "3000:3000"
-#     environment:
-#       NODE_ENV: development
-#       KEYCLOAK_CLIENT_ID: next-client
-#       KEYCLOAK_CLIENT_SECRET: 6TD1ytFiNe6fjT2I7DGQTp3lH1QGtiCR
-#       KEYCLOAK_ISSUER: http://keycloak:8080/realms/next-realm   # Adjust if needed
-#     depends_on:
-#       - keycloak
-#   db:
-#     image: postgres:15-alpine
-#     environment:
-#       POSTGRES_USER: next
-#       POSTGRES_PASSWORD: next
-#       POSTGRES_DB: next
-#     ports:
-#       - "5432:5432"
-
-#   keycloak:
-#     image: quay.io/keycloak/keycloak:21.0.2
-#     environment:
-#       - KEYCLOAK_IMPORT=/opt/keycloak/data/import/realm-export.json
-#       - KEYCLOAK_ADMIN=admin
-#       - KEYCLOAK_ADMIN_PASSWORD=admin 
-#       - KC_FEATURES=scripts
-#     volumes:
-#       - ./realm-export.json:/opt/keycloak/data/import/realm-export.json
-#     ports:
-#       - "8080:8080"
-#     # command: ["start-dev --import-realm"]  # Use "start" for production mode
-#     command:
-#     - "start-dev"
-#     - "--import-realm"
-
-# version: '3.8'
-# services:
+version: '3.8'
+services:
   # app:
   #   build:
   #     context: .
@@ -48,55 +8,13 @@
   #     - "3000:3000"
   #   environment:
   #     NODE_ENV: development
-  #     KEYCLOAK_CLIENT_ID: next-client
-  #     KEYCLOAK_CLIENT_SECRET: 6TD1ytFiNe6fjT2I7DGQTp3lH1QGtiCR
-  #     KEYCLOAK_ISSUER: http://keycloak:8080/realms/next-realm   # Adjust if needed
+  #     KEYCLOAK_CLIENT_ID: nextClient
+  #     KEYCLOAK_CLIENT_SECRET: Fkr6DgMClVGj7w5KyQ2SaJNdAFk25HAE
+  #     KEYCLOAK_ISSUER: http://keycloak:8080/realms/myrealm   # Adjust if needed
   #   depends_on:
   #     - keycloak
-#   db:
-#     image: postgres:15-alpine
-#     environment:
-#       POSTGRES_USER: next
-#       POSTGRES_PASSWORD: next
-#       POSTGRES_DB: next
-#     ports:
-#       - "5432:5432"
-#   keycloak:
-#     image: quay.io/keycloak/keycloak:21.0.2
-#     # restart: always
-#     environment:
-#       - KEYCLOAK_ADMIN=admin
-#       - KEYCLOAK_ADMIN_PASSWORD=admin 
-#       - KC_FEATURES=preview,scripts  # Enable preview and scripts features
-#       - KC_SPI_SCRIPT_UPLOADER_ALLOW_ENABLED=true  # Allow script uploads
-#     volumes:
-#       - ./realm-export.json:/opt/keycloak/data/import/realm-export.json
-#     ports:
-#       - "8080:8080"
-#     command: start-dev --import-realm 
-#       # - "start-dev"
-#       # - "--import-realm"
-#       # - "--features=scripts,preview"
-#       # - "--spi-script-uploader-allow-enabled=true"
-
-
-version: '3.8'
-services:
-  app:
-    build:
-      context: .
-    image: nextjs-dev
-    ports:
-      - "3000:3000"
-    environment:
-      NODE_ENV: development
-      KEYCLOAK_CLIENT_ID: nextClient
-      KEYCLOAK_CLIENT_SECRET: Fkr6DgMClVGj7w5KyQ2SaJNdAFk25HAE
-      KEYCLOAK_ISSUER: http://keycloak:8080/realms/myrealm   # Adjust if needed
-    depends_on:
-      - keycloak
-    networks:
-      - keycloak-network
+  #   networks:
+  #     - keycloak-network
   db:
     image: postgres:15-alpine
     environment:
