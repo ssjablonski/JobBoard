@@ -51,4 +51,9 @@ model Offer {
   createdAt      DateTime       @default(now())
 }
 
+// TODO zrobic tak zeby user mogl miec wiecej niz jedna firma
+// TODO zrobic tak ze gdy ktos loguje sie keycloakiem to sprawdzamy w bazie czy jest taki user jak nie to dodajemy go
+
+// ? sprawdz czy da sie zrobic tak zeby odwolywac sie np offer.comapny.name!
+
 // ! dodaj scheme i pozniej docker compose up i npx prisma db push

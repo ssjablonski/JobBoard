@@ -1,6 +1,18 @@
 import JobRow from "./JobRow";
 
-function Jobs(): React.ReactElement {
+const offers = [
+    {
+        companyId: "1",
+        title: "Software Engineer",
+        employmentType: "Full-time"
+    },
+    {
+        companyId: "2",
+        title: "Software Engineer",
+        employmentType: "Full-time"
+    }]
+
+async function Jobs(): React.ReactElement {
     return (
         <div className="bg-slate-200 py-6 rounded-3xl w-full">
             <div className="container">
@@ -10,6 +22,13 @@ function Jobs(): React.ReactElement {
                     <JobRow />
                     <JobRow />
                     <JobRow />
+                    {offers? offers.map((offer, i) => (
+                       <div key={i} className="bg-white p-4 rounded-lg shadow-sm relative">
+                            <h2>{offer.companyId}</h2>
+                            <h2>{offer.title}</h2>
+                            <p>{offer.employmentType}</p>
+                       </div> 
+                    )): null}
                 </div>
                 
             </div>
