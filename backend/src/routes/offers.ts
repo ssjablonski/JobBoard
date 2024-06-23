@@ -2,20 +2,14 @@ import express, { Request, Response } from 'express';
 import { verifyToken } from './auth';
 import prisma from '../lib/db';
 
-const app = express();
-const PORT = process.env.PORT || 3001;
-
-app.use(express.json());
-
-// Middleware do weryfikacji JWT
-app.use(verifyToken);
-
-// Endpointy API
+const router = express.Router();
 
 // Get all offers
-app.get('/api/offers', async (req: Request, res: Response) => {
+router.get('/all', async (req: Request, res: Response) => {
   try {
-    const offers = await prisma.offer.findMany();
+    const offers = await prisma.offer.findMany({
+      include: { company: true }
+    });
     res.status(200).json(offers);
   } catch (error) {
     console.error('Error fetching offers:', error);
@@ -24,14 +18,15 @@ app.get('/api/offers', async (req: Request, res: Response) => {
 });
 
 // Get single offer by id
-app.get('/api/offers/:id', async (req: Request, res: Response) => {
+router.get('/:id', async (req: Request, res: Response) => {
   const offerId = req.params.id;
   try {
     const offer = await prisma.offer.findUnique({
       where: { id: offerId },
+      include: { company: true }
     });
     if (!offer) {
-      res.status(404).json({ error: 'offer not found' });
+      res.status(404).json({ error: 'Offer not found' });
     } else {
       res.status(200).json(offer);
     }
@@ -41,56 +36,50 @@ app.get('/api/offers/:id', async (req: Request, res: Response) => {
   }
 });
 
-// Create a new offers
-app.post('/api/offers', async (req: Request, res: Response) => {
-  const { title, companyId, company, location, employmentType, mode } = req.body;
+// Create a new offer
+router.post('/create', async (req: Request, res: Response) => {
+  const { title, companyId, location, employmentType, mode } = req.body;
   try {
-    const newoffer = await prisma.offer.create({
+    const newOffer = await prisma.offer.create({
       data: {
         title,
         companyId,
-        company: {
-          connect: { id: companyId },
-        },
         location,
         employmentType,
         mode,
       },
     });
-    res.status(201).json(newoffer);
+    res.status(201).json(newOffer);
   } catch (error) {
     console.error('Error creating offer:', error);
     res.status(500).json({ error: 'Failed to create offer' });
   }
 });
 
-// Update a offers
-app.put('/api/offers/:id', async (req: Request, res: Response) => {
+// Update an offer
+router.put('/:id/update', async (req: Request, res: Response) => {
   const offerId = req.params.id;
-  const { title, companyId, company, location, employmentType, mode } = req.body;
+  const { title, companyId, location, employmentType, mode } = req.body;
   try {
-    const updatedoffer = await prisma.offer.update({
+    const updatedOffer = await prisma.offer.update({
       where: { id: offerId },
-        data: {
-            title,
-            companyId,
-            company: {
-            connect: { id: companyId },
-            },
-            location,
-            employmentType,
-            mode,
-        },
+      data: {
+        title,
+        companyId,
+        location,
+        employmentType,
+        mode,
+      },
     });
-    res.status(200).json(updatedoffer);
+    res.status(200).json(updatedOffer);
   } catch (error) {
     console.error('Error updating offer:', error);
     res.status(500).json({ error: 'Failed to update offer' });
   }
 });
 
-// Delete a offers
-app.delete('/api/offers/:id', async (req: Request, res: Response) => {
+// Delete an offer
+router.delete('/:id/delete', async (req: Request, res: Response) => {
   const offerId = req.params.id;
   try {
     await prisma.offer.delete({
@@ -103,6 +92,4 @@ app.delete('/api/offers/:id', async (req: Request, res: Response) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-});
+export default router;

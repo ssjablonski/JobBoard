@@ -2,20 +2,14 @@ import express, { Request, Response } from 'express';
 import { verifyToken } from './auth';
 import prisma from '../lib/db';
 
-const app = express();
-const PORT = process.env.PORT || 3001;
-
-app.use(express.json());
-
-// Middleware do weryfikacji JWT
-app.use(verifyToken);
-
-// Endpointy API
+const router = express.Router();
 
 // Get all users
-app.get('/api/users', async (req: Request, res: Response) => {
+router.get('/all', async (req: Request, res: Response) => {
   try {
-    const users = await prisma.user.findMany();
+    const users = await prisma.user.findMany({
+      include: { companies: true, Company: true }
+    });
     res.status(200).json(users);
   } catch (error) {
     console.error('Error fetching users:', error);
@@ -24,11 +18,12 @@ app.get('/api/users', async (req: Request, res: Response) => {
 });
 
 // Get single user by id
-app.get('/api/users/:id', async (req: Request, res: Response) => {
+router.get('/:id', async (req: Request, res: Response) => {
   const userId = req.params.id;
   try {
     const user = await prisma.user.findUnique({
       where: { id: userId },
+      include: { companies: true, Company: true }
     });
     if (!user) {
       res.status(404).json({ error: 'User not found' });
@@ -41,8 +36,30 @@ app.get('/api/users/:id', async (req: Request, res: Response) => {
   }
 });
 
+// Get single user by email
+router.get('/email/:email', async (req: Request, res: Response) => {
+  const userEmail = req.params.email;
+  try {
+    const user = await prisma.user.findUnique({
+      where: { email: userEmail },
+      include: { companies: true, Company: true }
+    });
+
+    // console.log('user', user)
+    
+    if (user == null) {
+      res.json('User not found');
+    } else {
+      res.status(200).json(user);
+    }
+  } catch (error) {
+    console.error('Error fetching user:', error);
+    res.status(500).json({ error: 'Failed to fetch user' });
+  }
+});
+
 // Create a new user
-app.post('/api/users', async (req: Request, res: Response) => {
+router.post('/create', async (req: Request, res: Response) => {
   const { name, email } = req.body;
   try {
     const newUser = await prisma.user.create({
@@ -59,21 +76,30 @@ app.post('/api/users', async (req: Request, res: Response) => {
 });
 
 // Update a user
-app.put('/api/users/:id', async (req: Request, res: Response) => {
+router.put('/:id', async (req: Request, res: Response) => {
   const userId = req.params.id;
-  const { name, email, companyId, company } = req.body;
+  const { name, email, companyId } = req.body; // Assuming companyId is passed in request body
+
   try {
+    // Check if the company exists (optional, but recommended)
+    const companyExists = await prisma.company.findUnique({
+      where: { id: companyId },
+    });
+
+    if (!companyExists) {
+      return res.status(404).json({ error: 'Company not found' });
+    }
+
+    // Update user, connecting to a company by its id
     const updatedUser = await prisma.user.update({
       where: { id: userId },
       data: {
         name,
         email,
-        companyId,
-        company: {
-          connect: { id: companyId },
-        },
+        companyId, // Ensure companyId is passed correctly
       },
     });
+
     res.status(200).json(updatedUser);
   } catch (error) {
     console.error('Error updating user:', error);
@@ -82,7 +108,7 @@ app.put('/api/users/:id', async (req: Request, res: Response) => {
 });
 
 // Delete a user
-app.delete('/api/users/:id', async (req: Request, res: Response) => {
+router.delete('/:id/delete', async (req: Request, res: Response) => {
   const userId = req.params.id;
   try {
     await prisma.user.delete({
@@ -95,6 +121,4 @@ app.delete('/api/users/:id', async (req: Request, res: Response) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-});
+export default router;

@@ -1,7 +1,10 @@
+import axios from "axios";
 import { AuthOptions, TokenSet } from "next-auth";
 import { JWT } from "next-auth/jwt";
 import NextAuth from "next-auth/next";
 import KeycloakProvider from "next-auth/providers/keycloak";
+
+const apiUrl = process.env.API_URL;
 
 async function requestRefreshOfAccessToken(token: JWT) {
   const response = await fetch(`${process.env.KEYCLOAK_ISSUER}/protocol/openid-connect/token`, {
@@ -75,27 +78,27 @@ export const authOptions: AuthOptions = {
       
       // console.log("user", user, "account", account, "profile", profile)
       if (account.provider === "keycloak") {
-        const email = profile.email;
-        
-        // try {
-        //   const existingUser = await prisma.user.findUnique({
-        //     where: { email: email },
-        //   });
-        //   // console.log("existingUser", existingUser)
+        const email = user.email;
+        const accessToken = account.access_token; // Pobierz token dostępu
 
-        //   if (!existingUser) {
-        //     await prisma.user.create({
-        //       data: {
-        //         email,
-        //         name: profile.name,
-        //       },
-        //     });
-        //   }
-        // } catch (error) {
-        //   console.error("Error creating user in database", error);
-        //   return false;
-        // }
-        // TODO create user in database if it does not exist form
+        try {
+          const response = await axios.get(`${apiUrl}/api/users/email/${email}`, {
+            headers: {
+              Authorization: `Bearer ${accessToken}` // Dodaj nagłówek z tokenem
+            }
+          });
+
+          if (response.data === 'User not found') {
+            await axios.post(`${apiUrl}/api/users/create`, { email, name: user.name }, {
+              headers: {
+                Authorization: `Bearer ${accessToken}` // Dodaj nagłówek z tokenem
+              }
+            });
+          }
+        } catch (error) {
+          console.error("Error creating user in database", error);
+          return false;
+        }
       }
       return true;
     },
