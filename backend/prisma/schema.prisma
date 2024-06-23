@@ -26,29 +26,40 @@ enum Mode {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
+  id        String        @id @default(cuid())
+  email     String        @unique
   name      String?
-  companyId String? // Add this line
-  company   Company? @relation(fields: [companyId], references: [id])
+  companies UserCompany[]
+  Company   Company?      @relation(fields: [companyId], references: [id])
+  companyId String?
 }
 
 model Company {
-  id        String  @id @default(cuid())
-  name      String
-  offers    Offer[]
-  employees User[]
+  id          String        @id @default(cuid())
+  name        String
+  offers      Offer[]
+  employees   User[]
+  UserCompany UserCompany[]
 }
 
 model Offer {
   id             String         @id @default(cuid())
   title          String
-  companyId      String // Add this line
+  companyId      String
   company        Company        @relation(fields: [companyId], references: [id])
   location       String
   employmentType EmploymentType
   mode           Mode
   createdAt      DateTime       @default(now())
+}
+
+model UserCompany {
+  userId    String
+  companyId String
+  user      User    @relation(fields: [userId], references: [id])
+  company   Company @relation(fields: [companyId], references: [id])
+
+  @@id([userId, companyId])
 }
 
 // TODO zrobic tak zeby user mogl miec wiecej niz jedna firma

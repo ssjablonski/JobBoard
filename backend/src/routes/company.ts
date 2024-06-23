@@ -2,20 +2,14 @@ import express, { Request, Response } from 'express';
 import { verifyToken } from './auth';
 import prisma from '../lib/db';
 
-const app = express();
-const PORT = process.env.PORT || 3001;
-
-app.use(express.json());
-
-// Middleware do weryfikacji JWT
-app.use(verifyToken);
-
-// Endpointy API
+const router = express.Router();
 
 // Get all companies
-app.get('/api/companies', async (req: Request, res: Response) => {
+router.get('/all', async (req: Request, res: Response) => {
   try {
-    const companies = await prisma.company.findMany();
+    const companies = await prisma.company.findMany({
+      include: { offers: true, employees: true }
+    });
     res.status(200).json(companies);
   } catch (error) {
     console.error('Error fetching companies:', error);
@@ -24,11 +18,12 @@ app.get('/api/companies', async (req: Request, res: Response) => {
 });
 
 // Get single company by id
-app.get('/api/companies/:id', async (req: Request, res: Response) => {
+router.get('/:id', async (req: Request, res: Response) => {
   const companyId = req.params.id;
   try {
     const company = await prisma.company.findUnique({
       where: { id: companyId },
+      include: { offers: true, employees: true }
     });
     if (!company) {
       res.status(404).json({ error: 'Company not found' });
@@ -41,15 +36,45 @@ app.get('/api/companies/:id', async (req: Request, res: Response) => {
   }
 });
 
-// Create a new companies
-app.post('/api/companies', async (req: Request, res: Response) => {
-  const { name } = req.body;
+// Get companies from user by id
+router.get('/user/:id', async (req: Request, res: Response) => {
+  const userId = req.params.id;
   try {
+    const companies = await prisma.userCompany.findMany({
+      where: { userId: userId },
+      include: { company: true }
+    });
+    if (!companies) {
+      res.status(404).json({ error: 'Companies not found' });
+    } else {
+      res.status(200).json(companies);
+    }
+  } catch (error) {
+    console.error('Error fetching companies:', error);
+    res.status(500).json({ error: 'Failed to fetch companies' });
+  }
+});
+
+// Create a new company
+router.post('/create', async (req: Request, res: Response) => {
+  const { name, userId } = req.body;
+
+  try {
+    // Utwórz nową firmę
     const newCompany = await prisma.company.create({
       data: {
         name,
       },
     });
+
+    // Utwórz powiązanie UserCompany dla nowo utworzonej firmy i użytkownika
+    const newUserCompany = await prisma.userCompany.create({
+      data: {
+        userId,
+        companyId: newCompany.id,
+      },
+    });
+
     res.status(201).json(newCompany);
   } catch (error) {
     console.error('Error creating company:', error);
@@ -57,18 +82,14 @@ app.post('/api/companies', async (req: Request, res: Response) => {
   }
 });
 
-// Update a companies
-app.put('/api/companies/:id', async (req: Request, res: Response) => {
+// Update a company
+router.put('/:id/update', async (req: Request, res: Response) => {
   const companyId = req.params.id;
-  const { name, offers, employees } = req.body;
+  const { name } = req.body;
   try {
     const updatedCompany = await prisma.company.update({
       where: { id: companyId },
-      data: {
-        name,
-        offers,
-        employees,
-      },
+      data: { name },
     });
     res.status(200).json(updatedCompany);
   } catch (error) {
@@ -77,11 +98,11 @@ app.put('/api/companies/:id', async (req: Request, res: Response) => {
   }
 });
 
-// Delete a companies
-app.delete('/api/companies/:id', async (req: Request, res: Response) => {
+// Delete a company
+router.delete('/:id/delete', async (req: Request, res: Response) => {
   const companyId = req.params.id;
   try {
-    await prisma.user.delete({
+    await prisma.company.delete({
       where: { id: companyId },
     });
     res.status(204).end();
@@ -91,6 +112,4 @@ app.delete('/api/companies/:id', async (req: Request, res: Response) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-});
+export default router;
