@@ -1,33 +1,10 @@
 
 import { getServerSession } from "next-auth"
 import { authOptions } from "../api/auth/[...nextauth]/route"
+import Link from "next/link";
+import { fetchCompanies, fetchUser } from "@/utils/api";
 import { createCompany } from "@/actions/actions";
 
-async function fetchUser(session) {
-    const response = await fetch(`${process.env.API_URL}/api/users/email/${session.user.email}`, {
-        headers: {
-            Authorization: `Bearer ${session.accessToken}`
-        }
-    });
-    const user = await response.json();
-    return user;
-}
-
-
-async function fetchCompanies(session, companies) {
-    const companiesInfoPromises = companies.map(async (company) => {
-        const response = await fetch(`${process.env.API_URL}/api/companies/${company.companyId}`, {
-            headers: {
-                Authorization: `Bearer ${session.accessToken}`
-            }
-        });
-        const companyData = await response.json();
-        return companyData;
-    });
-
-    const companiesInfo = await Promise.all(companiesInfoPromises);
-    return companiesInfo;
-}
 
 export default async function NewListingPage() {
     const session = await getServerSession(authOptions);
@@ -35,19 +12,15 @@ export default async function NewListingPage() {
     const user = await fetchUser(session);
     const companies = await fetchCompanies(session, user.companies);
 
-    const refresh = async (event) => {
-        event.preventDefault();
-        // Po udanym utworzeniu firmy, przeładuj stronę
-        window.location.reload();
-    };
-
     return (
         <div className="container">
             <h2 className="text-lg mt-6 font-semibold">Your companies</h2>
             <p className="text-gray-500 ">Select a company to create a job add for</p>
             {companies.length > 0 ? companies.map((company, i) => (
                 <div key={i} className="border border-blue-200 bg-blue-100 rounded-md p-4 mb-2">
-                    {company.name}
+                    <Link href={`/new-listing/addOffer/${company.id}`}>
+                        {company.name}
+                    </Link>
                 </div>
             )) : <div className="border border-blue-200 bg-blue-100 rounded-md p-4">
                 No companies assigned to your account

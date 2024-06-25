@@ -4,7 +4,7 @@ import { JWT } from "next-auth/jwt";
 import NextAuth from "next-auth/next";
 import KeycloakProvider from "next-auth/providers/keycloak";
 
-const apiUrl = process.env.API_URL;
+const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
 async function requestRefreshOfAccessToken(token: JWT) {
   const response = await fetch(`${process.env.KEYCLOAK_ISSUER}/protocol/openid-connect/token`, {

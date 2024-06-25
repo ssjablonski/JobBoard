@@ -1,7 +1,9 @@
+import { fetchOffers } from "@/utils/api";
 import Jobs from "../components/Jobs";
 
 
-function OffersPage() {
+async function OffersPage() {
+  const offers = await fetchOffers();
   return (
     <div>
       <div className="container my-16">
@@ -16,7 +18,7 @@ function OffersPage() {
         </form>
       </div>
         
-      <Jobs />
+      <Jobs offers={offers}/>
     </div>
   );
 }

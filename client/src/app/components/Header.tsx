@@ -6,7 +6,7 @@ import Logout from "./Logout";
 
 async function Header(): React.ReactElement {
   const session = await getServerSession(authOptions)
-  console.log("session",session)
+  // console.log("session",session)
   return (
     <header>
         <div className="container flex items-center justify-between mx-auto my-4">
