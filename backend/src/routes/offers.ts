@@ -38,15 +38,23 @@ router.get('/:id', async (req: Request, res: Response) => {
 
 // Create a new offer
 router.post('/create', async (req: Request, res: Response) => {
-  const { title, companyId, location, employmentType, mode } = req.body;
+  const { companyId, title, description, location, salary, employmentType, mode, jobIcon, contactPhoto, contactPhone, contactName, contactEmail } = req.body;
+
   try {
     const newOffer = await prisma.offer.create({
       data: {
-        title,
         companyId,
+        title,
+        description,
         location,
+        salary,
         employmentType,
         mode,
+        jobIcon,
+        contactPhoto,
+        contactPhone,
+        contactName,
+        contactEmail
       },
     });
     res.status(201).json(newOffer);
@@ -59,16 +67,23 @@ router.post('/create', async (req: Request, res: Response) => {
 // Update an offer
 router.put('/:id/update', async (req: Request, res: Response) => {
   const offerId = req.params.id;
-  const { title, companyId, location, employmentType, mode } = req.body;
+  const { companyId, title, description, location, salary, employmentType, mode, jobIcon, contactPhoto, contactPhone, contactName, contactEmail } = req.body;
   try {
     const updatedOffer = await prisma.offer.update({
       where: { id: offerId },
       data: {
-        title,
         companyId,
+        title,
+        description,
         location,
+        salary,
         employmentType,
         mode,
+        jobIcon,
+        contactPhoto,
+        contactPhone,
+        contactName,
+        contactEmail
       },
     });
     res.status(200).json(updatedOffer);

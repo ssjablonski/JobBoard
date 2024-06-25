@@ -44,12 +44,19 @@ model Company {
 
 model Offer {
   id             String         @id @default(cuid())
-  title          String
   companyId      String
   company        Company        @relation(fields: [companyId], references: [id])
+  title          String
+  description    String
   location       String
+  salary         String
   employmentType EmploymentType
   mode           Mode
+  jobIcon        String
+  contactPhoto   String
+  contactName    String
+  contactPhone   String
+  contactEmail   String
   createdAt      DateTime       @default(now())
 }
 
