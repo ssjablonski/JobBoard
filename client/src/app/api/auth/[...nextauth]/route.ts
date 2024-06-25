@@ -1,5 +1,6 @@
 import axios from "axios";
-import { AuthOptions, TokenSet } from "next-auth";
+import { NextApiHandler } from "next";
+import { AuthOptions, NextAuthOptions, TokenSet } from "next-auth";
 import { JWT } from "next-auth/jwt";
 import NextAuth from "next-auth/next";
 import KeycloakProvider from "next-auth/providers/keycloak";
@@ -33,7 +34,7 @@ async function requestRefreshOfAccessToken(token: JWT) {
   };
 }
 
-export const authOptions: AuthOptions = {
+export const authOptions: NextAuthOptions = {
   providers: [
     KeycloakProvider({
       clientId: process.env.KEYCLOAK_CLIENT_ID!,
@@ -76,22 +77,21 @@ export const authOptions: AuthOptions = {
     },
     async signIn({ user, account, profile }) {
       
-      // console.log("user", user, "account", account, "profile", profile)
       if (account.provider === "keycloak") {
         const email = user.email;
-        const accessToken = account.access_token; // Pobierz token dostępu
+        const accessToken = account.access_token; 
 
         try {
           const response = await axios.get(`${apiUrl}/api/users/email/${email}`, {
             headers: {
-              Authorization: `Bearer ${accessToken}` // Dodaj nagłówek z tokenem
+              Authorization: `Bearer ${accessToken}`
             }
           });
 
           if (response.data === 'User not found') {
             await axios.post(`${apiUrl}/api/users/create`, { email, name: user.name }, {
               headers: {
-                Authorization: `Bearer ${accessToken}` // Dodaj nagłówek z tokenem
+                Authorization: `Bearer ${accessToken}`
               }
             });
           }
@@ -105,6 +105,7 @@ export const authOptions: AuthOptions = {
   },
 };
 
-const handler = NextAuth(authOptions);
+const handler: NextApiHandler = (req, res) => NextAuth(req, res, authOptions);
+
 export { handler as GET, handler as POST };
 
