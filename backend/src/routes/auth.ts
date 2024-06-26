@@ -7,8 +7,7 @@ interface AuthRequest extends Request {
   user?: any; // Możesz zdefiniować tutaj dokładniejszy typ dla użytkownika, jeśli jest dostępny
 }
 
-// const jwksUri = 'http://localhost:8080/realms/nextRealm/protocol/openid-connect/certs';
-const jwksUri = 'http://nginx:3050/realms/nextRealm/protocol/openid-connect/certs';
+const jwksUri = 'http://localhost:8080/realms/nextRealm/protocol/openid-connect/certs';
 
 const client = jwksClient({
   jwksUri,
