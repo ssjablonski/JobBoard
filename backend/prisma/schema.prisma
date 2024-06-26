@@ -1,0 +1,73 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum EmploymentType {
+  FULL_TIME
+  PART_TIME
+  INTERNSHIP
+}
+
+enum Mode {
+  REMOTE
+  ONSITE
+  HYBRID
+}
+
+model User {
+  id        String        @id @default(cuid())
+  email     String        @unique
+  name      String?
+  companies UserCompany[]
+  Company   Company?      @relation(fields: [companyId], references: [id])
+  companyId String?
+}
+
+model Company {
+  id          String        @id @default(cuid())
+  name        String
+  offers      Offer[]
+  employees   User[]
+  UserCompany UserCompany[]
+}
+
+model Offer {
+  id             String         @id @default(cuid())
+  companyId      String
+  company        Company        @relation(fields: [companyId], references: [id])
+  title          String
+  description    String
+  location       String
+  salary         String
+  employmentType EmploymentType
+  mode           Mode
+  jobIcon        String
+  contactPhoto   String
+  contactName    String
+  contactPhone   String
+  contactEmail   String
+  createdAt      DateTime       @default(now())
+}
+
+model UserCompany {
+  userId    String
+  companyId String
+  user      User    @relation(fields: [userId], references: [id])
+  company   Company @relation(fields: [companyId], references: [id])
+
+  @@id([userId, companyId])
+}
+
+// ! dodaj scheme i pozniej docker compose up i npx prisma db push
